@@ -1,0 +1,28 @@
+name: Veille Lucky Bay
+
+on:
+  schedule:
+    # Toutes les heures. Le script ignore les heures hors 7 h - 22 h (heure de Paris).
+    - cron: "5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: python3 veille.py
+      - if: steps.check.outputs.alerte != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ALERTE: ${{ steps.check.outputs.alerte }}
+        run: |
+          # Une seule alerte ouverte à la fois, pour ne pas recevoir un e-mail par heure.
+          n=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "Place libre in:title" --json number -q '.[0].number')
+          if [ -n "$n" ]; then echo "Alerte déjà ouverte (#$n)."; exit 0; fi
+          corps=$(printf '%s\n\nRéserve vite : https://parkstay.dbca.wa.gov.au/\n\nFerme cette issue pour recevoir les prochaines alertes. @%s' "$ALERTE" "$GITHUB_REPOSITORY_OWNER")
+          gh issue create -R "$GITHUB_REPOSITORY" --title "Place libre à Cape Le Grand !" --body "$corps"
