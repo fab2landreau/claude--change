@@ -1,9 +1,10 @@
 name: Veille Lucky Bay
 
 on:
-  schedule:
-    # Toutes les heures. Le script ignore les heures hors 7 h - 22 h (heure de Paris).
-    - cron: "5 * * * *"
+  # Planification suspendue : ParkStay refuse les serveurs GitHub (HTTP 406).
+  # schedule:
+  #   # Toutes les heures. Le script ignore les heures hors 7 h - 22 h (heure de Paris).
+  #   - cron: "5 * * * *"
   workflow_dispatch:
 
 permissions:
